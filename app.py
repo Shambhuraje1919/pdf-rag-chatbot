@@ -95,6 +95,10 @@ class JinaEmbeddings(Embeddings):
                 timeout=120
             )
 
+            if not response.ok:
+                print("Jina Status:", response.status_code)
+                print("Jina Response:", response.text)
+
             response.raise_for_status()
 
             embeddings = [

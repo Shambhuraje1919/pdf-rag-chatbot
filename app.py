@@ -77,8 +77,8 @@ class JinaEmbeddings(Embeddings):
     def embed_documents(self, texts):
         all_embeddings = []
 
-        for i in range(0, len(texts), 50):
-            batch = texts[i:i + 50]
+        for i in range(0, len(texts), 10):
+            batch = texts[i:i + 10]
 
             response = requests.post(
                 self.url,

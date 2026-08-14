@@ -104,11 +104,7 @@ if all_documents:
     #st.audio("success.mp3", autoplay=True)
 
     
-
-    llm = ChatGroq(
-        model="llama-3.1-8b-instant",
-        api_key=os.getenv("GROQ_API_KEY")
-    )
+    
 
     prompt = PromptTemplate(
         template="""You are a document question-answering assistant.

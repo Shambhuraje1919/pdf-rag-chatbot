@@ -81,7 +81,7 @@ def create_vector_store(documents):
     chunks = splitter.split_documents(documents)
 
     embedding = HuggingFaceEmbeddings(
-    model_name="sentence-transformers/all-MiniLM-L6-v2"
+        model_name="sentence-transformers/all-MiniLM-L6-v2"
     )
     vector_store = FAISS.from_documents(
         documents=chunks,
@@ -105,7 +105,15 @@ if all_documents:
 
     
     
+    GROQ_API_KEY = st.secrets.get(
+        "GROQ_API_KEY",
+        os.getenv("GROQ_API_KEY")
+    )
 
+    llm = ChatGroq(
+        model="openai/gpt-oss-20b",
+        api_key=GROQ_API_KEY
+    )
     prompt = PromptTemplate(
         template="""You are a document question-answering assistant.
 
@@ -147,7 +155,7 @@ Answer:""",
             f"{doc.page_content}"
             for doc in docs
     )
-
+    
     parser = StrOutputParser()
 
     chain = (

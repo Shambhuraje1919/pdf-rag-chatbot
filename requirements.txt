@@ -2,8 +2,9 @@ streamlit
 langchain
 langchain-community
 langchain-groq
+langchain-huggingface
 langchain-text-splitters
 faiss-cpu
 pypdf
 python-dotenv
-requests
+sentence-transformers

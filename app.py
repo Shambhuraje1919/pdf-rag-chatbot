@@ -4,8 +4,8 @@ import tempfile
 import os
 from dotenv import load_dotenv
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-import requests
-from langchain_core.embeddings import Embeddings
+
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_groq import ChatGroq
 from langchain_core.prompts import PromptTemplate
@@ -68,67 +68,6 @@ if uploaded_files:
 
 
 
-class JinaEmbeddings(Embeddings):
-    def __init__(self):
-        self.api_key = os.getenv("JINA_API_KEY")
-        self.url = "https://api.jina.ai/v1/embeddings"
-        self.model = "jina-embeddings-v3"
-
-    def embed_documents(self, texts):
-        all_embeddings = []
-
-        for i in range(0, len(texts), 10):
-            batch = texts[i:i + 10]
-
-            response = requests.post(
-                self.url,
-                headers={
-                    "Authorization": f"Bearer {self.api_key}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": self.model,
-                    "input": batch,
-                    "task": "retrieval.passage",
-                    "dimensions": 768
-                },
-                timeout=120
-            )
-
-            if not response.ok:
-                print("Jina Status:", response.status_code)
-                print("Jina Response:", response.text)
-
-            response.raise_for_status()
-
-            embeddings = [
-                item["embedding"]
-                for item in response.json()["data"]
-            ]
-
-            all_embeddings.extend(embeddings)
-
-        return all_embeddings
-
-    def embed_query(self, text):
-        response = requests.post(
-            self.url,
-            headers={
-                "Authorization": f"Bearer {self.api_key}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": self.model,
-                "input": [text],
-                "task": "retrieval.query",
-                "dimensions": 768
-            },
-            timeout=120
-        )
-
-        response.raise_for_status()
-
-        return response.json()["data"][0]["embedding"]
 
 
 @st.cache_resource
@@ -141,8 +80,9 @@ def create_vector_store(documents):
 
     chunks = splitter.split_documents(documents)
 
-    embedding = JinaEmbeddings()
-
+    embedding = HuggingFaceEmbeddings(
+    model_name="sentence-transformers/all-MiniLM-L6-v2"
+    )
     vector_store = FAISS.from_documents(
         documents=chunks,
         embedding=embedding

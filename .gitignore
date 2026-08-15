@@ -3,5 +3,3 @@
 __pycache__/
 *.pyc
 .streamlit/
-*.pdf
-!testing*.pdf

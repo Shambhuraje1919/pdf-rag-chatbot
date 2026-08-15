@@ -4,7 +4,6 @@ import tempfile
 import os
 from dotenv import load_dotenv
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_groq import ChatGroq
@@ -49,10 +48,13 @@ if uploaded_files:
 
             loader = PyPDFLoader(pdf_path)
             pdf = loader.load()
-            os.remove(pdf_path)  # cleanup temp file
+            os.remove(pdf_path) 
 
             for doc in pdf:
                 doc.metadata["source"] = uploaded_file.name
+                doc.metadata["page"] = doc.metadata.get("page", 0) + 1  
+                first_line = doc.page_content.strip().split("\n")[0].strip()
+                doc.metadata["section"] = first_line if first_line else "Unknown"
 
             loaded_documents.extend(pdf)
 
@@ -105,10 +107,14 @@ if all_documents:
 
     
     
-    GROQ_API_KEY = st.secrets.get(
-        "GROQ_API_KEY",
-        os.getenv("GROQ_API_KEY")
-    )
+    try:
+        GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
+    except Exception:
+        GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
+    if not GROQ_API_KEY:
+        st.error("GROQ_API_KEY not found.")
+        st.stop()
 
     llm = ChatGroq(
         model="openai/gpt-oss-20b",
